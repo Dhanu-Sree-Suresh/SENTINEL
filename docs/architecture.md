@@ -111,44 +111,44 @@ Global Model
 **Architecture E** is selected as the final design.
 
 ```
- ┌─────────────────────────────┐
- │      GOVERNMENT SOC         │
- │  Dashboard • Investigation  │
- └──────────────┬──────────────┘
-                │
- ┌──────────────▼──────────────┐
- │  PRIVACY SECURITY CONTROL   │
- │           PLANE             │
- │                             │
- │  • Policy Engine            │
- │  • Privacy Budget Manager   │
- │  • Privacy Ledger           │
- │  • Query Risk Engine        │
- │  • Privacy Attack Detection │
- │  • Audit / SIEM Integration │
- └──────────────┬──────────────┘
-                │
- ┌─────────────────────┼────────────────────┐
- │                     │                    │
- ┌──────▼──────┐ ┌──────▼──────┐ ┌──────▼──────┐
- │ Government A│ │ Government B│ │ Government C│
- │             │ │             │ │             │
- │ Raw Data    │ │ Raw Data    │ │ Raw Data    │
- │ Local ML    │ │ Local ML    │ │ Local ML    │
- │ User-Level DP│ │ User-Level DP│ │ User-Level DP│
- └──────┬──────┘ └──────┬──────┘ └──────┬──────┘
-        │               │               │
-        └───────────────┼───────────────┘
-                        │
-             ┌──────────▼──────────┐
-             │  SECURE AGGREGATION │
-             └──────────┬──────────┘
-                        │
-             ┌──────────▼──────────┐
-             │ GLOBAL CYBER MODEL /│
-             │ COLLABORATIVE       │
-             │ ANALYTICS           │
-             └─────────────────────┘
+            ┌─────────────────────────────┐
+            │      GOVERNMENT SOC         │
+            │  Dashboard • Investigation  │
+            └──────────────┬──────────────┘
+                           │
+            ┌──────────────▼──────────────┐
+            │  PRIVACY SECURITY CONTROL   │
+            │           PLANE             │
+            │                             │
+            │  • Policy Engine            │
+            │  • Privacy Budget Manager   │
+            │  • Privacy Ledger           │
+            │  • Query Risk Engine        │
+            │  • Privacy Attack Detection │
+            │  • Audit / SIEM Integration │
+            └──────────────┬──────────────┘
+                           │
+         ┌─────────────────┼─────────────────┐
+         │                 │                 │
+ ┌───────▼───────┐ ┌───────▼───────┐ ┌───────▼───────┐
+ │ Government A  │ │ Government B  │ │ Government C  │
+ │               │ │               │ │               │
+ │ Raw Data      │ │ Raw Data      │ │ Raw Data      │
+ │ Local ML      │ │ Local ML      │ │ Local ML      │
+ │ User-Level DP │ │ User-Level DP │ │ User-Level DP │
+ └───────┬───────┘ └───────┬───────┘ └───────┬───────┘
+         │                 │                 │
+         └─────────────────┼─────────────────┘
+                           │
+                ┌──────────▼──────────┐
+                │  SECURE AGGREGATION │
+                └──────────┬──────────┘
+                           │
+                ┌──────────▼──────────┐
+                │ GLOBAL CYBER MODEL /│
+                │ COLLABORATIVE       │
+                │ ANALYTICS           │
+                └─────────────────────┘
 
  ATTACKS
    │
