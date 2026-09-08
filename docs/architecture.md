@@ -109,55 +109,9 @@ Global Model
 ## 2. Selected Architecture — Privacy Security Control Plane
 
 **Architecture E** is selected as the final design.
+<img width="1658" height="985" alt="image" src="https://github.com/user-attachments/assets/e97749ee-1e73-4dc9-b1f6-450358305ef9" />
 
-```
-            ┌─────────────────────────────┐
-            │      GOVERNMENT SOC         │
-            │  Dashboard • Investigation  │
-            └──────────────┬──────────────┘
-                           │
-            ┌──────────────▼──────────────┐
-            │  PRIVACY SECURITY CONTROL   │
-            │           PLANE             │
-            │                             │
-            │  • Policy Engine            │
-            │  • Privacy Budget Manager   │
-            │  • Privacy Ledger           │
-            │  • Query Risk Engine        │
-            │  • Privacy Attack Detection │
-            │  • Audit / SIEM Integration │
-            └──────────────┬──────────────┘
-                           │
-         ┌─────────────────┼─────────────────┐
-         │                 │                 │
- ┌───────▼───────┐ ┌───────▼───────┐ ┌───────▼───────┐
- │ Government A  │ │ Government B  │ │ Government C  │
- │               │ │               │ │               │
- │ Raw Data      │ │ Raw Data      │ │ Raw Data      │
- │ Local ML      │ │ Local ML      │ │ Local ML      │
- │ User-Level DP │ │ User-Level DP │ │ User-Level DP │
- └───────┬───────┘ └───────┬───────┘ └───────┬───────┘
-         │                 │                 │
-         └─────────────────┼─────────────────┘
-                           │
-                ┌──────────▼──────────┐
-                │  SECURE AGGREGATION │
-                └──────────┬──────────┘
-                           │
-                ┌──────────▼──────────┐
-                │ GLOBAL CYBER MODEL /│
-                │ COLLABORATIVE       │
-                │ ANALYTICS           │
-                └─────────────────────┘
 
- ATTACKS
-   │
-   ▼
- MIA • Query Abuse • Poisoning
-   │
-   ▼
- Detection → Policy → Containment → SOC Alert
-```
 
 The **Privacy Security Control Plane** is the key differentiator. It combines policy enforcement, privacy-budget management, query monitoring, attack detection and audit functionality around the collaborative analytics process.
 
