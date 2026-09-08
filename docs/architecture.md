@@ -141,7 +141,7 @@ The **Privacy Security Control Plane** is the key differentiator. It combines po
 
 The objective is not to claim that the underlying cryptographic primitives are new. The differentiation is their **operational composition** around a government cybersecurity problem.
 
-## 5. Trust-Boundary Diagram (Text Representation)
+## 5. Trust-Boundary Diagram
 
 ```
 ┌──────────────────────────────────────────────────────────────────┐
@@ -168,7 +168,7 @@ The objective is not to claim that the underlying cryptographic primitives are n
 └──────────────────────────────────────────────────────────────────┘
 ```
 
-## 6. Data-Flow Diagram (Text Representation)
+## 6. Data-Flow Diagram
 
 ```
 Entity A/B/C Local Environment
