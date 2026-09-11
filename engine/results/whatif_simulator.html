@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>SENTINEL FEDERATED — What-If Simulator</title>
+<style>
+  :root {
+    --bg: #0b1020; --panel: #131a2e; --panel2: #0e1526; --accent: #4f8cff; --accent2: #ff5c5c;
+    --good: #35c98f; --warn: #e8a317; --muted: #8b93a8; --border: #232b45; --text: #e8ecf5;
+  }
+  * { box-sizing: border-box; }
+  body { margin:0; font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+         background: linear-gradient(180deg, var(--bg), #0d1326); color: var(--text); }
+  header { padding: 28px 40px 14px; border-bottom: 1px solid var(--border); }
+  header h1 { margin: 0 0 6px; font-size: 24px; }
+  header .subtitle { color: var(--muted); font-size: 13px; max-width: 900px; line-height:1.5; }
+  main { padding: 24px 40px 60px; max-width: 1180px; margin: 0 auto; }
+  .panel { background: var(--panel); border: 1px solid var(--border); border-radius: 14px;
+           padding: 22px 26px; margin-bottom: 26px; }
+  .panel h2 { margin: 0 0 4px; font-size: 17px; border-left: 3px solid var(--accent); padding-left: 10px; }
+  .panel .desc { color: var(--muted); font-size: 12.5px; margin: 6px 0 18px; max-width: 820px; }
+  .controls { display: flex; flex-wrap: wrap; gap: 22px; align-items: flex-end; margin-bottom: 18px; }
+  .control { display: flex; flex-direction: column; gap: 6px; min-width: 200px; }
+  .control label { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; }
+  .control input[type=range] { width: 220px; accent-color: var(--accent); }
+  .control select, .control .seg { font-size: 13px; }
+  .seg { display:flex; border:1px solid var(--border); border-radius:8px; overflow:hidden; }
+  .seg button { background: var(--panel2); color: var(--text); border: none; padding: 7px 12px;
+                cursor: pointer; font-size: 12.5px; border-right: 1px solid var(--border); }
+  .seg button:last-child { border-right: none; }
+  .seg button.active { background: var(--accent); color: #08101f; font-weight: 600; }
+  .value-badge { font-size: 13px; color: var(--text); font-weight: 600; }
+  .readout { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 14px; }
+  .stat { background: var(--panel2); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; }
+  .stat .label { color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: .5px; margin-bottom: 6px; }
+  .stat .val { font-size: 22px; font-weight: 700; }
+  .stat .sub { color: var(--muted); font-size: 11.5px; margin-top: 4px; }
+  .bar-wrap { background: #0a1120; border-radius: 6px; height: 10px; margin-top: 8px; overflow: hidden; }
+  .bar { height: 100%; border-radius: 6px; transition: width .25s ease; }
+  .warn-banner { background: rgba(232,163,23,0.12); border: 1px solid rgba(232,163,23,0.4);
+                 color: var(--warn); font-size: 12.5px; padding: 10px 14px; border-radius: 8px; margin-top: 14px; }
+  .danger-banner { background: rgba(255,92,92,0.12); border: 1px solid rgba(255,92,92,0.4);
+                   color: var(--accent2); font-size: 12.5px; padding: 10px 14px; border-radius: 8px; margin-top: 14px; }
+  .good-banner { background: rgba(53,201,143,0.12); border: 1px solid rgba(53,201,143,0.4);
+                 color: var(--good); font-size: 12.5px; padding: 10px 14px; border-radius: 8px; margin-top: 14px; }
+  .footnote { color: var(--muted); font-size: 11.5px; margin-top: 10px; }
+  .provenance { color: var(--muted); font-size: 11px; padding: 18px 40px; border-top: 1px solid var(--border); }
+  .kill-chain { display:flex; gap:6px; margin-top: 16px; flex-wrap: wrap; }
+  .kc-step { flex:1; min-width:120px; background: var(--panel2); border:1px solid var(--border);
+             border-radius: 8px; padding: 10px 12px; font-size: 12px; text-align:center; position:relative; }
+  .kc-step.hit { border-color: var(--accent2); background: rgba(255,92,92,0.1); }
+  .kc-step .n { color: var(--muted); font-size: 10px; text-transform:uppercase; }
+</style>
+</head>
+<body>
+<header>
+  <h1>🎛️ SENTINEL FEDERATED — What-If Simulator</h1>
+  <div class="subtitle">Every number below is looked up from a precomputed grid of REAL executed experiments
+  (experiments/run_whatif_grid.py) — sliders snap to the nearest tested value rather than interpolating a
+  smooth curve nothing was ever run for. No number on this page is invented at slider-move time.
+  <br><a href="dashboard.html" style="color:#4f8cff">&larr; Back to the main results dashboard</a></div>
+</header>
+<main>
+
+<div class="panel" id="privacy-panel">
+  <h2>1. Privacy Dial — Epsilon vs. Utility vs. Attack Success</h2>
+  <div class="desc">Move the privacy budget. Watch model utility and membership-inference attack success
+  move together — that coupling IS the trade-off this platform makes explicit and controllable, not a bug.</div>
+  <div class="controls">
+    <div class="control">
+      <label>Privacy budget (epsilon) — lower = more private</label>
+      <input type="range" id="eps-slider" min="0" max="6" step="1" value="3">
+      <span class="value-badge" id="eps-value">ε ≈ 4.0</span>
+    </div>
+  </div>
+  <div class="readout">
+    <div class="stat">
+      <div class="label">Model utility (ROC-AUC)</div>
+      <div class="val" id="eps-util-val">–</div>
+      <div class="bar-wrap"><div class="bar" id="eps-util-bar" style="background:var(--accent)"></div></div>
+      <div class="sub" id="eps-util-sub"></div>
+    </div>
+    <div class="stat">
+      <div class="label">Membership-inference attack AUC</div>
+      <div class="val" id="eps-mi-val">–</div>
+      <div class="bar-wrap"><div class="bar" id="eps-mi-bar" style="background:var(--accent2)"></div></div>
+      <div class="sub">0.50 = random guessing (no attack advantage)</div>
+    </div>
+  </div>
+  <div id="eps-banner"></div>
+</div>
+
+<div class="panel" id="security-panel">
+  <h2>2. Threat Simulator — Malicious Entities vs. Aggregation Strategy</h2>
+  <div class="desc">Simulate a compromised entity sending sign-flipped, adversarially-scaled updates every
+  training round. Choose how many of the 4 entities are compromised and which aggregation rule defends the
+  cohort. Includes the honest 50%-malicious case, where robust aggregation's theoretical guarantee actually breaks.</div>
+  <div class="controls">
+    <div class="control">
+      <label>Malicious entities</label>
+      <div class="seg" id="mal-seg">
+        <button data-val="0" class="active">0 / 4 (honest)</button>
+        <button data-val="1">1 / 4 (25%)</button>
+        <button data-val="2">2 / 4 (50%)</button>
+      </div>
+    </div>
+    <div class="control">
+      <label>Aggregation strategy</label>
+      <div class="seg" id="agg-seg">
+        <button data-val="mean" class="active">Plain FedAvg (mean)</button>
+        <button data-val="median">Coordinate Median</button>
+        <button data-val="trimmed_mean">Trimmed Mean</button>
+      </div>
+    </div>
+  </div>
+  <div class="readout">
+    <div class="stat" style="grid-column: 1 / -1">
+      <div class="label">Resulting global-model utility (ROC-AUC)</div>
+      <div class="val" id="sec-util-val">–</div>
+      <div class="bar-wrap"><div class="bar" id="sec-util-bar" style="background:var(--accent)"></div></div>
+      <div class="sub" id="sec-util-sub"></div>
+    </div>
+  </div>
+  <div id="sec-banner"></div>
+</div>
+
+<div class="panel" id="query-panel">
+  <h2>3. Privacy SOC Tuning — Detection Thresholds vs. Attack Sequences</h2>
+  <div class="desc">Tune the query-pattern monitor's two detectors against two REAL fixed attack sequences:
+  a classic differencing probe (same filters, excluding one more person each query) and a burst of genuinely
+  unrelated queries (tests the frequency detector in isolation). Lower thresholds catch attacks sooner but
+  risk more false positives on legitimate bulk analysis — this panel makes that trade-off tunable.</div>
+  <div class="controls">
+    <div class="control">
+      <label>Frequency threshold (queries/window)</label>
+      <input type="range" id="freq-slider" min="0" max="2" step="1" value="1">
+      <span class="value-badge" id="freq-value">5</span>
+    </div>
+    <div class="control">
+      <label>Similarity (Jaccard) threshold</label>
+      <input type="range" id="jac-slider" min="0" max="2" step="1" value="0">
+      <span class="value-badge" id="jac-value">0.60</span>
+    </div>
+  </div>
+  <div class="readout">
+    <div class="stat">
+      <div class="label">Differencing attack — detected at query #</div>
+      <div class="val" id="q-diff-val">–</div>
+    </div>
+    <div class="stat">
+      <div class="label">Unrelated burst — flagged at query #</div>
+      <div class="val" id="q-burst-val">–</div>
+      <div class="sub">Lower = more false-positive-prone on ordinary bulk queries</div>
+    </div>
+  </div>
+  <div class="kill-chain" id="kill-chain"></div>
+  <div id="query-banner"></div>
+</div>
+
+<div class="panel">
+  <h2>Provenance</h2>
+  <div class="desc" id="provenance-text"></div>
+</div>
+
+</main>
+<footer class="provenance">Regenerate with: python3 experiments/run_whatif_grid.py && python3 dashboard/whatif_simulator.py</footer>
+
+<script>
+const GRID = {"provenance": {"timestamp": 1789024890.8372045, "git_commit": "not_a_git_repo", "python_version": "3.12.3 (main, Mar  3 2026, 12:15:18) [GCC 13.3.0]", "numpy_version": "2.4.4", "base_seed": 42, "seeds": [1, 2, 3], "rounds": 15, "clip_norm": 2.0, "delta": 1e-05}, "privacy_axis": [{"epsilon_target": 0.5, "epsilon_actual": 0.4999966897402684, "utility_auc_mean": 0.5746163870909285, "utility_auc_std": 0.025711969431349842, "mi_attack_auc_mean": 0.5234985112594555, "mi_attack_auc_std": 0.04049951344878876}, {"epsilon_target": 1.0, "epsilon_actual": 0.9999904916224338, "utility_auc_mean": 0.5956778315086901, "utility_auc_std": 0.02876211326291403, "mi_attack_auc_mean": 0.5252912041486832, "mi_attack_auc_std": 0.03915388250155115}, {"epsilon_target": 2.0, "epsilon_actual": 1.9998437354750578, "utility_auc_mean": 0.6099045282411729, "utility_auc_std": 0.03185251463438693, "mi_attack_auc_mean": 0.5261407570953985, "mi_attack_auc_std": 0.03425477689068882}, {"epsilon_target": 4.0, "epsilon_actual": 3.9995692865417283, "utility_auc_mean": 0.6159565387206645, "utility_auc_std": 0.030890081638715216, "mi_attack_auc_mean": 0.529701709512472, "mi_attack_auc_std": 0.029022475405966155}, {"epsilon_target": 8.0, "epsilon_actual": 7.9999663457746, "utility_auc_mean": 0.617795216676944, "utility_auc_std": 0.028278538078142363, "mi_attack_auc_mean": 0.5302307412593371, "mi_attack_auc_std": 0.025601997220832874}, {"epsilon_target": 16.0, "epsilon_actual": 15.99689908179646, "utility_auc_mean": 0.6183992012983127, "utility_auc_std": 0.026266348984521386, "mi_attack_auc_mean": 0.5293868226063376, "mi_attack_auc_std": 0.023475056156251}, {"epsilon_target": 32.0, "epsilon_actual": 31.989924193857696, "utility_auc_mean": 0.6186048159695994, "utility_auc_std": 0.025050556220295072, "mi_attack_auc_mean": 0.5284797845624792, "mi_attack_auc_std": 0.022839990695154192}], "anchors": {"naive_centralized": {"utility_auc": 0.6177765312751559, "mi_attack_auc": 0.5353569353180954}, "fl_no_dp": {"utility_auc": 0.6181426419628636, "mi_attack_auc": 0.5274556411398699}}, "security_grid": [{"malicious_fraction": 0.0, "n_malicious": 0, "malicious_entities": [], "aggregation_strategy": "mean", "utility_auc_mean": 0.6343468543376395, "utility_auc_std": 0.0035978816780187026}, {"malicious_fraction": 0.0, "n_malicious": 0, "malicious_entities": [], "aggregation_strategy": "median", "utility_auc_mean": 0.6355393870876083, "utility_auc_std": 0.002403717781110406}, {"malicious_fraction": 0.0, "n_malicious": 0, "malicious_entities": [], "aggregation_strategy": "trimmed_mean", "utility_auc_mean": 0.6355393870876083, "utility_auc_std": 0.002403717781110406}, {"malicious_fraction": 0.25, "n_malicious": 1, "malicious_entities": ["B"], "aggregation_strategy": "mean", "utility_auc_mean": 0.40649548563419285, "utility_auc_std": 0.006895223210094289}, {"malicious_fraction": 0.25, "n_malicious": 1, "malicious_entities": ["B"], "aggregation_strategy": "median", "utility_auc_mean": 0.6332926136955338, "utility_auc_std": 0.0032675043472728655}, {"malicious_fraction": 0.25, "n_malicious": 1, "malicious_entities": ["B"], "aggregation_strategy": "trimmed_mean", "utility_auc_mean": 0.6332926136955338, "utility_auc_std": 0.0032675043472728655}, {"malicious_fraction": 0.5, "n_malicious": 2, "malicious_entities": ["B", "C"], "aggregation_strategy": "mean", "utility_auc_mean": 0.45843101153536675, "utility_auc_std": 0.007654513295387523}, {"malicious_fraction": 0.5, "n_malicious": 2, "malicious_entities": ["B", "C"], "aggregation_strategy": "median", "utility_auc_mean": 0.4588564433602154, "utility_auc_std": 0.006990175143609913}, {"malicious_fraction": 0.5, "n_malicious": 2, "malicious_entities": ["B", "C"], "aggregation_strategy": "trimmed_mean", "utility_auc_mean": 0.4588564433602154, "utility_auc_std": 0.006990175143609913}], "query_detection_grid": [{"freq_threshold": 3, "jaccard_threshold": 0.6, "differencing_first_alert_index": 2, "differencing_detected": true, "burst_first_alert_index": 2, "burst_detected": true}, {"freq_threshold": 3, "jaccard_threshold": 0.8, "differencing_first_alert_index": 2, "differencing_detected": true, "burst_first_alert_index": 2, "burst_detected": true}, {"freq_threshold": 3, "jaccard_threshold": 0.95, "differencing_first_alert_index": 2, "differencing_detected": true, "burst_first_alert_index": 2, "burst_detected": true}, {"freq_threshold": 5, "jaccard_threshold": 0.6, "differencing_first_alert_index": 2, "differencing_detected": true, "burst_first_alert_index": 4, "burst_detected": true}, {"freq_threshold": 5, "jaccard_threshold": 0.8, "differencing_first_alert_index": 4, "differencing_detected": true, "burst_first_alert_index": 4, "burst_detected": true}, {"freq_threshold": 5, "jaccard_threshold": 0.95, "differencing_first_alert_index": 4, "differencing_detected": true, "burst_first_alert_index": 4, "burst_detected": true}, {"freq_threshold": 8, "jaccard_threshold": 0.6, "differencing_first_alert_index": 2, "differencing_detected": true, "burst_first_alert_index": 7, "burst_detected": true}, {"freq_threshold": 8, "jaccard_threshold": 0.8, "differencing_first_alert_index": 7, "differencing_detected": true, "burst_first_alert_index": 7, "burst_detected": true}, {"freq_threshold": 8, "jaccard_threshold": 0.95, "differencing_first_alert_index": 7, "differencing_detected": true, "burst_first_alert_index": 7, "burst_detected": true}]};
+
+// ---------- Panel 1: Privacy dial ----------
+const privacyAxis = GRID.privacy_axis; // sorted by epsilon_actual
+const epsSlider = document.getElementById('eps-slider');
+epsSlider.max = privacyAxis.length - 1;
+function renderPrivacy() {
+  const row = privacyAxis[+epsSlider.value];
+  document.getElementById('eps-value').textContent = `ε ≈ ${row.epsilon_actual.toFixed(2)}`;
+  document.getElementById('eps-util-val').textContent = row.utility_auc_mean.toFixed(3);
+  document.getElementById('eps-mi-val').textContent = row.mi_attack_auc_mean.toFixed(3);
+  const utilPct = Math.max(0, Math.min(100, (row.utility_auc_mean - 0.45) / (0.65 - 0.45) * 100));
+  const miPct = Math.max(0, Math.min(100, (row.mi_attack_auc_mean - 0.48) / (0.58 - 0.48) * 100));
+  document.getElementById('eps-util-bar').style.width = utilPct + '%';
+  document.getElementById('eps-mi-bar').style.width = miPct + '%';
+  document.getElementById('eps-util-sub').textContent =
+    `naive centralized ceiling: ${GRID.anchors.naive_centralized.utility_auc.toFixed(3)}`;
+  const banner = document.getElementById('eps-banner');
+  if (row.epsilon_actual < 1.0) {
+    banner.className = 'good-banner';
+    banner.textContent = `Strong privacy tier: attack AUC (${row.mi_attack_auc_mean.toFixed(3)}) is close to random guessing, at a real utility cost (${(GRID.anchors.naive_centralized.utility_auc - row.utility_auc_mean).toFixed(3)} AUC below the unconstrained ceiling).`;
+  } else if (row.epsilon_actual > 15) {
+    banner.className = 'warn-banner';
+    banner.textContent = `Loose privacy tier: utility is near the naive ceiling, but so is attack success (${row.mi_attack_auc_mean.toFixed(3)}) — approaching the naive baseline's exposure.`;
+  } else {
+    banner.className = '';
+    banner.textContent = '';
+  }
+}
+epsSlider.addEventListener('input', renderPrivacy);
+renderPrivacy();
+
+// ---------- Panel 2: Threat simulator ----------
+let malVal = 0, aggVal = 'mean';
+function findSecurityRow() {
+  return GRID.security_grid.find(r => r.n_malicious === malVal && r.aggregation_strategy === aggVal);
+}
+function renderSecurity() {
+  const row = findSecurityRow();
+  document.getElementById('sec-util-val').textContent = row.utility_auc_mean.toFixed(3);
+  const pct = Math.max(0, Math.min(100, (row.utility_auc_mean - 0.35) / (0.65 - 0.35) * 100));
+  const bar = document.getElementById('sec-util-bar');
+  bar.style.width = pct + '%';
+  bar.style.background = row.utility_auc_mean < 0.5 ? 'var(--accent2)' : (row.utility_auc_mean < 0.6 ? 'var(--warn)' : 'var(--good)');
+  const honestRow = GRID.security_grid.find(r => r.n_malicious === 0 && r.aggregation_strategy === aggVal);
+  document.getElementById('sec-util-sub').textContent =
+    `honest-cohort reference (same strategy): ${honestRow.utility_auc_mean.toFixed(3)}`;
+
+  const banner = document.getElementById('sec-banner');
+  if (malVal === 0) {
+    banner.className = ''; banner.textContent = '';
+  } else if (malVal === 1 && aggVal === 'mean') {
+    banner.className = 'danger-banner';
+    banner.textContent = `Plain FedAvg has NO defense: a single compromised entity (25% of the cohort) drops utility from ${honestRow.utility_auc_mean.toFixed(3)} to ${row.utility_auc_mean.toFixed(3)} — worse than useless for the downstream analyst.`;
+  } else if (malVal === 1 && aggVal !== 'mean') {
+    banner.className = 'good-banner';
+    banner.textContent = `Robust aggregation fully neutralizes a single compromised entity: utility (${row.utility_auc_mean.toFixed(3)}) stays within noise of the honest-cohort reference.`;
+  } else if (malVal === 2) {
+    banner.className = 'danger-banner';
+    banner.textContent = `At 50% malicious, EVEN ROBUST AGGREGATION DEGRADES (${row.utility_auc_mean.toFixed(3)} vs. honest ${honestRow.utility_auc_mean.toFixed(3)}) — this is the real, disclosed theoretical limit: coordinate-wise robust rules are only guaranteed below 50% malicious. This is not hidden; it is the platform's stated residual risk.`;
+  }
+}
+document.querySelectorAll('#mal-seg button').forEach(btn => btn.addEventListener('click', () => {
+  document.querySelectorAll('#mal-seg button').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active'); malVal = +btn.dataset.val; renderSecurity();
+}));
+document.querySelectorAll('#agg-seg button').forEach(btn => btn.addEventListener('click', () => {
+  document.querySelectorAll('#agg-seg button').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active'); aggVal = btn.dataset.val; renderSecurity();
+}));
+renderSecurity();
+
+// ---------- Panel 3: Privacy SOC tuning ----------
+const freqValues = [3, 5, 8];
+const jacValues = [0.6, 0.8, 0.95];
+const freqSlider = document.getElementById('freq-slider');
+const jacSlider = document.getElementById('jac-slider');
+function findQueryRow() {
+  const ft = freqValues[+freqSlider.value], jt = jacValues[+jacSlider.value];
+  return GRID.query_detection_grid.find(r => r.freq_threshold === ft && r.jaccard_threshold === jt);
+}
+function renderQuery() {
+  document.getElementById('freq-value').textContent = freqValues[+freqSlider.value];
+  document.getElementById('jac-value').textContent = jacValues[+jacSlider.value].toFixed(2);
+  const row = findQueryRow();
+  document.getElementById('q-diff-val').textContent = row.differencing_detected ? ('#' + (row.differencing_first_alert_index + 1)) : 'not detected';
+  document.getElementById('q-burst-val').textContent = row.burst_detected ? ('#' + (row.burst_first_alert_index + 1)) : 'not detected';
+
+  const chain = document.getElementById('kill-chain');
+  const steps = ['Reconnaissance', 'Probing', 'Differencing', 'Detection', 'Response'];
+  const hitIdx = row.differencing_detected ? 3 : -1;
+  chain.innerHTML = steps.map((s, i) => `<div class="kc-step ${i === hitIdx ? 'hit' : ''}"><div class="n">Step ${i+1}</div>${s}</div>`).join('');
+
+  const banner = document.getElementById('query-banner');
+  if (!row.differencing_detected) {
+    banner.className = 'danger-banner';
+    banner.textContent = 'At this threshold combination, the differencing attack sequence is NOT detected within 10 queries.';
+  } else if (row.differencing_first_alert_index <= 2) {
+    banner.className = 'good-banner';
+    banner.textContent = `Fast detection: the differencing probe is caught by query #${row.differencing_first_alert_index + 1} of 10.`;
+  } else {
+    banner.className = 'warn-banner';
+    banner.textContent = `Slower detection: query #${row.differencing_first_alert_index + 1} — more budget/queries are exposed before the SOC responds.`;
+  }
+}
+freqSlider.addEventListener('input', renderQuery);
+jacSlider.addEventListener('input', renderQuery);
+renderQuery();
+
+// ---------- Provenance ----------
+const p = GRID.provenance;
+document.getElementById('provenance-text').textContent =
+  `Computed ${new Date(p.timestamp * 1000).toISOString()} | Python ${p.python_version.split(' ')[0]} | ` +
+  `NumPy ${p.numpy_version} | base_seed=${p.base_seed} | seeds=${JSON.stringify(p.seeds)} | ` +
+  `rounds=${p.rounds} | clip_norm=${p.clip_norm} | delta=${p.delta} | git_commit=${p.git_commit}`;
+</script>
+</body>
+</html>

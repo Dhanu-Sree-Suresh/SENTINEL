@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>SENTINEL FEDERATED — Results Dashboard</title>
+<style>
+  :root {
+    --bg: #0b1020; --panel: #131a2e; --accent: #4f8cff; --accent2: #ff5c5c;
+    --good: #35c98f; --text: #e8ecf5; --muted: #8b93a8; --border: #232b45;
+  }
+  * { box-sizing: border-box; }
+  body { margin:0; font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+          background: linear-gradient(180deg, var(--bg), #0d1326); color: var(--text); }
+  header { padding: 36px 48px 18px; border-bottom: 1px solid var(--border); }
+  header h1 { margin: 0 0 6px; font-size: 26px; letter-spacing: 0.3px; }
+  header .subtitle { color: var(--muted); font-size: 14px; }
+  main { padding: 28px 48px 60px; max-width: 1180px; margin: 0 auto; }
+  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 16px; margin: 20px 0 36px; }
+  .card { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 18px 20px; }
+  .card-label { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 8px; }
+  .card-value { font-size: 26px; font-weight: 700; }
+  .card-sub { color: var(--muted); font-size: 12px; margin-top: 6px; }
+  section { margin-bottom: 42px; }
+  h2 { font-size: 18px; border-left: 3px solid var(--accent); padding-left: 10px; margin-bottom: 6px; }
+  .note { color: var(--muted); font-size: 13px; margin: 6px 0 14px; max-width: 820px; }
+  table { width: 100%; border-collapse: collapse; background: var(--panel); border-radius: 10px; overflow: hidden; }
+  th, td { text-align: left; padding: 10px 14px; border-bottom: 1px solid var(--border); font-size: 13px; }
+  th { color: var(--muted); font-weight: 600; text-transform: uppercase; font-size: 11px; letter-spacing: 0.5px; }
+  .badge { display:inline-block; padding: 2px 9px; border-radius: 999px; font-size: 11px; font-weight:600; }
+  .badge-good { background: rgba(53,201,143,0.15); color: var(--good); }
+  .badge-bad { background: rgba(255,92,92,0.15); color: var(--accent2); }
+  footer { color: var(--muted); font-size: 12px; padding: 24px 48px; border-top: 1px solid var(--border); }
+  img.chart { width: 100%; max-width: 720px; border-radius: 10px; border: 1px solid var(--border); margin-top: 10px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>🛡️ SENTINEL FEDERATED — Privacy Firewall for Collaborative Cyber Defence</h1>
+  <div class="subtitle">Results dashboard — every number below comes from an executed run, not an illustration. See results/RESULTS_REPORT.md for full methodology.<br><a href="whatif_simulator.html" style="color:#4f8cff">&rarr; Open the interactive What-If Simulator</a> to explore the privacy / security / detection trade-offs live.</div>
+</header>
+<main>
+
+<div class="cards">
+  <div class="card">
+            <div class="card-label">Naive baseline — MI attack AUC</div>
+            <div class="card-value">0.535</div>
+            <div class="card-sub">0.50 = random guessing</div>
+        </div>
+  <div class="card">
+            <div class="card-label">Proposed system — MI attack AUC</div>
+            <div class="card-value">0.530</div>
+            <div class="card-sub">at &epsilon;≈4.0</div>
+        </div>
+  <div class="card">
+            <div class="card-label">Gradient inversion (raw)</div>
+            <div class="card-value">1.000</div>
+            <div class="card-sub">cosine similarity to true record</div>
+        </div>
+  <div class="card">
+            <div class="card-label">Gradient inversion (DP-protected)</div>
+            <div class="card-value">-0.041</div>
+            <div class="card-sub">≈0 = reconstruction fails</div>
+        </div>
+  <div class="card">
+            <div class="card-label">Proposed system utility (ROC-AUC)</div>
+            <div class="card-value">0.616</div>
+            <div class="card-sub">vs 0.618 naive / 0.618 FL-no-DP</div>
+        </div>
+  <div class="card">
+            <div class="card-label">Query-monitor alerts raised</div>
+            <div class="card-value">6</div>
+            <div class="card-sub">against a simulated MI-probing analyst</div>
+        </div>
+</div>
+
+<section>
+  <h2>Privacy / Utility / Attack-Success Trade-off (epsilon sweep, 3-seed average)</h2>
+  <p class="note">Federated Learning + DP-SGD across epsilon &isin; {0.5, 1, 2, 4, 8, 16, 32}. Both model
+  utility and membership-inference attack success rise together as the privacy budget loosens —
+  the trade-off the platform is built to make explicit and controllable.</p>
+  <img class="chart" src="chart_privacy_utility_tradeoff.png" alt="privacy utility tradeoff chart">
+  <table style="margin-top:16px">
+    <tr><th>Epsilon (actual)</th><th>Utility ROC-AUC</th><th>MI attack AUC (high-risk subgroup)</th></tr>
+    <tr>
+            <td>0.50</td>
+            <td>0.575 &plusmn; 0.026</td>
+            <td>0.523 &plusmn; 0.040</td>
+        </tr><tr>
+            <td>1.00</td>
+            <td>0.596 &plusmn; 0.029</td>
+            <td>0.525 &plusmn; 0.039</td>
+        </tr><tr>
+            <td>2.00</td>
+            <td>0.610 &plusmn; 0.032</td>
+            <td>0.526 &plusmn; 0.034</td>
+        </tr><tr>
+            <td>4.00</td>
+            <td>0.616 &plusmn; 0.031</td>
+            <td>0.530 &plusmn; 0.029</td>
+        </tr><tr>
+            <td>8.00</td>
+            <td>0.618 &plusmn; 0.028</td>
+            <td>0.530 &plusmn; 0.026</td>
+        </tr><tr>
+            <td>16.00</td>
+            <td>0.618 &plusmn; 0.026</td>
+            <td>0.529 &plusmn; 0.023</td>
+        </tr><tr>
+            <td>31.99</td>
+            <td>0.619 &plusmn; 0.025</td>
+            <td>0.528 &plusmn; 0.023</td>
+        </tr>
+  </table>
+</section>
+
+<section>
+  <h2>Gradient Inversion — the dramatic result</h2>
+  <p class="note">A raw FL update lets an aggregator reconstruct the exact input record
+  (closed-form for logistic regression: x = grad_w / grad_b). DP-SGD's clipping and noise
+  destroy this completely.</p>
+  <img class="chart" src="chart_gradient_inversion.png" alt="gradient inversion chart">
+</section>
+
+
+        <section>
+          <h2>Byzantine Robustness — Model Poisoning Defense</h2>
+          <p class="note">One of four entities sends an adversarial (sign-flipped, 8&times; scaled)
+          update every round, on the full 20,000+-record-per-entity dataset. Plain FedAvg has
+          no defense; coordinate-wise robust aggregation fully recovers utility.</p>
+          <table><tr><th>Condition</th><th>Global model ROC-AUC</th></tr><tr>
+                <td>⚪ Honest cohort, plain FedAvg</td>
+                <td>0.634 &plusmn; 0.004</td>
+            </tr><tr>
+                <td>🔴 1 malicious entity, plain FedAvg</td>
+                <td>0.406 &plusmn; 0.007</td>
+            </tr><tr>
+                <td>🟢 1 malicious entity, coordinate MEDIAN</td>
+                <td>0.633 &plusmn; 0.003</td>
+            </tr><tr>
+                <td>🟢 1 malicious entity, TRIMMED MEAN</td>
+                <td>0.633 &plusmn; 0.003</td>
+            </tr></table>
+        </section>
+
+        <section>
+          <h2>Centralized Utility Ceilings (no privacy, for reference only)</h2>
+          <p class="note">Full 83,000-record pooled dataset, no privacy constraint at all —
+          shows what a completely unconstrained approach could achieve, for honest comparison.</p>
+          <table><tr><th>Model</th><th>ROC-AUC</th><th>PR-AUC</th><th>Best F1</th></tr><tr><td>Logistic Regression</td>
+                <td>0.641</td><td>0.055</td><td>0.110</td></tr><tr><td>Random Forest</td>
+                <td>0.625</td><td>0.051</td><td>0.105</td></tr><tr><td>Gradient Boosting</td>
+                <td>0.637</td><td>0.050</td><td>0.102</td></tr><tr><td>Mlp</td>
+                <td>0.603</td><td>0.045</td><td>0.089</td></tr></table>
+        </section>
+
+<section>
+  <h2>Privacy Firewall — example budget ledger</h2>
+  <p class="note">Per-entity cumulative epsilon spend, tracked round-by-round against a pre-committed,
+  publicly-known risk-tier ceiling.</p>
+  <table>
+    <tr><th>Entity</th><th>Rounds used</th><th>Epsilon spent</th></tr>
+    <tr><td>A</td><td>15</td><td>4.0188</td></tr><tr><td>B</td><td>15</td><td>4.0188</td></tr><tr><td>C</td><td>15</td><td>4.0188</td></tr><tr><td>D</td><td>15</td><td>4.0188</td></tr>
+  </table>
+</section>
+
+</main>
+<footer>
+  Generated from results/results.json , poisoning_results.json , baseline_results.json.
+  Regenerate with: python3 dashboard/generate_report.py
+</footer>
+</body>
+</html>
