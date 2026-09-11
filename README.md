@@ -1,7 +1,5 @@
 # SENTINEL — Privacy-Preserving Analytics on Sensitive Government Data
 
-Competition-ready demonstrator for **Privacy-Preserving Analytics on Sensitive Government Data**.
-
 ## Problem / business case
 
 Government organizations may need shared population analytics and cross-entity ML without pooling sensitive individual records into one central database. PPA-GOV demonstrates a control plane in which multiple simulated custodians keep their records locally while releasing only privacy-protected statistics or protected model updates.
