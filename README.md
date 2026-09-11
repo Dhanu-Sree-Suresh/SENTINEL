@@ -1,4 +1,4 @@
-# PPA-GOV — Privacy-Preserving Analytics on Sensitive Government Data
+# SENTINEL — Privacy-Preserving Analytics on Sensitive Government Data
 
 Competition-ready demonstrator for **Privacy-Preserving Analytics on Sensitive Government Data**.
 
