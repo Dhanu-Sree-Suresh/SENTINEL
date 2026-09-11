@@ -31,7 +31,7 @@ The browser dashboard is the primary jury interface and works offline. `server.p
 - DP-SGD with conservative RDP accounting
 - Secure aggregation and coordinate-wise robust aggregation in the research engine
 - Membership-inference and gradient-inversion evaluation
-- AEGIS-inspired attack scenarios: membership inference, differencing, rare-subgroup reconstruction, repeated-query attack, gradient inversion, and model poisoning
+- Attack scenarios: membership inference, differencing, rare-subgroup reconstruction, repeated-query attack, gradient inversion, and model poisoning
 - Interactive naive vs protected attack comparison
 - Analyst policy engine with actual protected aggregate answers for allowed requests
 - Hard blocking of membership/individual-level requests
@@ -142,9 +142,3 @@ The bundled suite contains **59 tests** covering the accountant, DP-SGD, federat
 8. **Privacy Protection vs Answer Accuracy** — move epsilon and demonstrate the utility/privacy trade-off plus the dotted population visualization.
 9. **Infrastructure** — demonstrate that an establishment can be added/connected and that its Excel dataset can be attached.
 10. **Audit Trail** — export the session evidence if required.
-
-## Source integration
-
-The final package keeps the v4 PPA-GOV browser interface as the visual/interaction baseline and incorporates the supplied AEGIS attack concepts and the stronger PPA-GOV research/privacy engine. PPGA datasets and architecture notes are included under `data/ppga` and `docs` for traceable comparison/reference.
-
-> Note: a `sentinel-kill-chain` ZIP was listed in the requested source set but was **not present among the uploaded files available for this build**. The supplied v4 interface was therefore retained as the UI baseline rather than inventing or guessing Sentinel-specific components.
