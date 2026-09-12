@@ -1,0 +1,117 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@theme {
+  --font-sans: "IBM Plex Sans", "Segoe UI", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  --color-bg: #070910;
+  --color-fg: #f4f4f7;
+  --color-muted: #8b93a7;
+  --color-surface: #0e111a;
+  --color-surface-2: #141824;
+  --color-border: #252a3a;
+  --color-accent: #ff4fb3;
+  --color-accent-2: #6fd9ff;
+  --color-ok: #44d39a;
+  --color-warn: #f4bd54;
+  --color-danger: #ff5f78;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 22px;
+}
+
+html.light {
+  --color-bg: #f4f6f7;
+  --color-fg: #1c2b30;
+  --color-muted: #5b6b74;
+  --color-surface: #ffffff;
+  --color-surface-2: #eef2f3;
+  --color-border: #d7dee1;
+  --color-accent: #1a8a72;
+  --color-accent-2: #3d6f99;
+  --color-ok: #2e8b6f;
+  --color-warn: #c48412;
+  --color-danger: #c45c50;
+}
+
+@layer base {
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
+  html,
+  body,
+  #app {
+    min-height: 100%;
+  }
+  body {
+    margin: 0;
+    background: var(--color-bg);
+    color: var(--color-fg);
+    font-family: var(--font-sans);
+    letter-spacing: 0.01em;
+  }
+  html.dark body {
+    background:
+      radial-gradient(circle at 82% -8%, color-mix(in oklab, var(--color-accent) 12%, transparent), transparent 32%),
+      linear-gradient(180deg, #070910 0%, #090b12 100%);
+  }
+  html.light body {
+    background: var(--color-bg);
+  }
+}
+
+.grid-overlay {
+  pointer-events: none;
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  opacity: 0.35;
+  background-image:
+    linear-gradient(color-mix(in oklab, var(--color-fg) 4%, transparent) 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in oklab, var(--color-fg) 4%, transparent) 1px, transparent 1px);
+  background-size: 40px 40px;
+  mask-image: linear-gradient(to bottom, black, transparent 78%);
+}
+
+html.light .grid-overlay {
+  opacity: 0.12;
+}
+
+.num {
+  font-variant-numeric: tabular-nums;
+  font-weight: 650;
+  letter-spacing: -0.03em;
+}
+
+.arch-node {
+  transition: transform 180ms cubic-bezier(0.22, 1, 0.36, 1), border-color 180ms ease, background 180ms ease;
+}
+.arch-node:hover,
+.arch-node.active {
+  transform: translateY(-1px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+@media print {
+  aside,
+  header,
+  .no-print {
+    display: none !important;
+  }
+  main {
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+  .print-page {
+    page-break-after: always;
+    break-after: page;
+  }
+}

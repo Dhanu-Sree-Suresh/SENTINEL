@@ -1,142 +1,277 @@
-# SENTINEL — Privacy-Preserving Analytics on Sensitive Government Data
+# SENTINEL · PPA-GOV
 
-## Problem / business case
+Privacy-preserving analytics control plane for sensitive government data.
 
-Government organizations may need shared population analytics and cross-entity ML without pooling sensitive individual records into one central database. PPA-GOV demonstrates a control plane in which multiple simulated custodians keep their records locally while releasing only privacy-protected statistics or protected model updates.
+SENTINEL lets multiple agencies obtain useful population analytics and a shared insider-threat model **without pooling raw records**. Each silo keeps its data local. Only clipped, noised, optionally masked updates and differentially private aggregates leave the entity.
 
-The application is deliberately synthetic and demonstrative. It does not contain real government or patient data.
+This repository is the unified competition prototype. It merges:
 
-## Architecture
+| Source | What was kept |
+|---|---|
+| **ppa-gov-final-competition-ready** | Multi-page control-plane IA, analyst console, guided demo, policy/ledger |
+| **ppa-gov-ctf2026-final-v4** | Dark command-center look (pink / cyan), page set, interactive charts |
+| **sentinel-kill-chain** | Light SOC theme, kill-chain telemetry, measured FL / DP-SGD / attack numbers |
+| **AEGIS prototype** | Live monitor, security posture, attack-lab pipeline, architecture diagram |
+| **PPGA** | Guided workflow, prevalence / trade-off views |
 
-```text
-Custodian A ─┐
-Custodian B ─┼─ local computation ─ DP / clipping ─ secure aggregation ─ policy ─ aggregate/model
-Custodian C ─┤
-Custodian D ─┘
-                         │
-                  SOC / query monitor
-                         │
-              attack detection + audit trail
-```
+All headline numbers are from an executed experiment (`public/results.json`), not placeholders.
 
-The browser dashboard is the primary jury interface and works offline. `server.py` provides an optional local API mode backed by the bundled research implementation.
+---
 
-## Features
+## What it demonstrates
 
-- Interactive population prevalence analytics
-- Federated classifier workflow with local records and protected updates
-- Differentially private aggregate queries using the Laplace mechanism
-- DP-SGD with conservative RDP accounting
-- Secure aggregation and coordinate-wise robust aggregation in the research engine
-- Membership-inference and gradient-inversion evaluation
-- Attack scenarios: membership inference, differencing, rare-subgroup reconstruction, repeated-query attack, gradient inversion, and model poisoning
-- Interactive naive vs protected attack comparison
-- Analyst policy engine with actual protected aggregate answers for allowed requests
-- Hard blocking of membership/individual-level requests
-- Query monitor and differencing-sequence detector
-- Live security-event stream
-- Privacy budget ledger and training epochs
-- Privacy/utility trade-off explorer
-- Infrastructure/custodian management with Excel dataset attachment
-- Detailed audit trail and Excel-compatible exports
-- Guided demo that moves the jury into the page currently being explained
+- **Multi-entity collaboration** — five synthetic government silos, ~32,000 records, ~4% positive rate, non-IID
+- **Federated learning + DP-SGD** — local training, clip \(C=1.5\), Gaussian noise, Rényi-DP accountant, secure aggregation
+- **Concrete ML task** — binary insider-threat risk classification (logistic regression backbone + model-family comparison)
+- **Naïve vs protected** — pooled training vs FL+DP at \(\varepsilon \approx 4\)
+- **Privacy / utility trade-off** — \(\varepsilon\) sweep from 0.5 to 32
+- **Controlled attacks** — membership inference, gradient inversion, differencing, rare-subgroup reconstruction, repeated queries, poisoning
+- **SOC operations** — live monitor, kill-chain stages, health, audit, analyst chat console
+- **Dual theme** — dark PPA-GOV control plane and light Sentinel SOC
 
-## Privacy mechanism
+### Headline measured results
 
-### Aggregate analytics
-A count query uses the Laplace mechanism with L1 sensitivity 1:
+| Setting | ROC-AUC | Notes |
+|---|---|---|
+| Naïve pooled (logistic) | **0.597** | Utility ceiling; gradients fully exposed |
+| Federated, no DP | 0.592 | No raw rows moved |
+| Federated + DP-SGD \(\varepsilon \approx 4\) | **0.594** | Utility essentially held |
+| Gradient inversion (raw) | cosine \(\approx 1.0\) | Reconstructs the batch |
+| Gradient inversion (DP) | cosine \(\approx 0.0003\) | Collapses |
+| Membership inference (naïve) | AUC 0.510 | Weak-signal task; reported honestly |
+| Membership inference (FL+DP) | AUC 0.491 | Near chance |
 
-`noisy_count = true_count + Laplace(0, sensitivity / epsilon)`
+---
 
-Each entity adds its own noise before the aggregate interface receives the contribution. Query epsilon spending is tracked per entity.
+## Quick start
 
-### Federated learning
-The research engine trains a lightweight logistic model locally at each entity. Only model updates are aggregated. DP-SGD clips updates and adds Gaussian noise; the bundled RDP accountant reports a conservative `(epsilon, delta)` guarantee without claiming subsampling amplification.
+### Prerequisites
 
-### Secure aggregation
-The research implementation masks client updates so the aggregator sees only the aggregate sum. Robust aggregation is intentionally treated as a separate mode because coordinate-wise robust rules require visibility into individual updates.
+- **Node.js 22+** and npm
+- Optional, only to re-run the research engine: **Python 3.11+**
 
-## Threat model
-
-The system considers:
-
-- curious analysts probing for individual records
-- membership inference
-- differencing/query-sequence attacks
-- gradient inversion against unprotected model updates
-- repeated-query abuse
-- model poisoning by a compromised entity
-- prompt/injection-style attempts against the analyst interface
-
-## Privacy assumptions / limitations
-
-- All records used by the demonstrator are synthetic.
-- Differential privacy protects individuals under the stated neighboring-dataset model; it does not make every downstream disclosure harmless.
-- The browser Attack Lab includes interactive scenario estimates for user experimentation. The **measured** attack results are the executed research benchmarks bundled under `engine/results` and are clearly labeled as such.
-- The research RDP accountant is conservative and deliberately does not claim privacy amplification from minibatch subsampling.
-- The bundled counting-query and FL accounting streams are maintained separately; a production system should unify accounting across mechanisms.
-- Robust aggregation has a documented failure boundary at 50% malicious entities.
-- The optional local API uses a small generated synthetic dataset for responsiveness; the full research dataset is generated by `engine/src/data_gen.py` and is not required for the browser UI.
-
-## Measured privacy / utility results
-
-The bundled executed experiment matrix reports:
-
-| Condition | Utility ROC-AUC | MI attack AUC |
-|---|---:|---:|
-| Centralized naive | **0.618** | **0.535** |
-| FL + DP, epsilon ≈ 4 | **0.616** | **0.530** |
-
-Gradient-inversion benchmark:
-
-| Update | Mean reconstruction cosine similarity | Median MSE |
-|---|---:|---:|
-| Raw FL gradient | **0.99999998** | **1.3e-35** |
-| DP-protected gradient | **-0.041** | **2.67** |
-
-Model-poisoning benchmark with one malicious entity (25%): plain FedAvg ROC-AUC **0.406** versus coordinate-median **0.633**. The research report honestly documents degradation when 50% of entities are malicious.
-
-See `engine/results/RESULTS_REPORT.md` and `engine/results/results.json` for provenance and the complete experiment matrix.
-
-## Installation / run
-
-### Fastest jury demo — no Python required
-
-Open:
-
-`index.html`
-
-in a modern browser.
-
-### Optional local API mode
+### Install
 
 ```bash
+npm install
+```
+
+### Start (development)
+
+```bash
+npm run dev
+```
+
+Opens the app at **http://localhost:8080**.
+
+The first load is the SOC dashboard. Use the sidebar to move between pages, the sun/moon control to switch light/dark, and the **Guided demo** button (bottom-right) for an eight-step walkthrough.
+
+### Production build
+
+```bash
+npm run build
+```
+
+### Preview the production build
+
+```bash
+npm run preview
+```
+
+### Typecheck / lint / tests
+
+```bash
+npm run typecheck
+npm run lint
+npm test
+```
+
+---
+
+## Commands
+
+| Command | What it does |
+|---|---|
+| `npm install` | Install JavaScript dependencies |
+| `npm run dev` | Start the interactive app on **port 8080** (`0.0.0.0`) |
+| `npm run build` | Production build (Vite + Nitro / Vercel preset) |
+| `npm run preview` | Serve the production build (loopback, port 8081) |
+| `npm run typecheck` | TypeScript `tsc --noEmit` |
+| `npm test` | Node test runner (scripts + lib tests) |
+| `npm run lint` | ESLint |
+| `npm run format` | Prettier write |
+
+Default **start command:** `npm run dev`  
+Default **build command:** `npm run build`  
+Default **install command:** `npm install`  
+Dev server **port:** `8080`
+
+---
+
+## Deploying to Render
+
+| Setting | Value |
+|---|---|
+| Environment | Node |
+| Build command | `npm install && npm run build` |
+| Start command | `npm start` (runs `node .output/server/index.mjs`) |
+| Node version | 22 (pinned by `.node-version`) |
+| Port | Render sets `PORT` automatically — Nitro's Node server reads it, no config needed |
+| Health check path | `/` |
+
+A `render.yaml` Blueprint is included — connect the repo and Render will pick up the build/start commands and Node version automatically.
+
+Notes:
+- `DATABASE_URL` is optional. Unset, the app runs on an embedded in-memory Postgres (PGLite) that resets on every restart/deploy. Set it (Render Postgres, Neon, etc.) to persist data.
+- Auth is off by default in this prototype, so no auth secrets are required to deploy.
+- The production build uses Nitro's default Node server output (`.output/server/index.mjs`), which is portable across Render, Railway, Docker, or a bare VM — not tied to Vercel's serverless format.
+
+**"Blocked request... add to server.allowedHosts" on the live site:** this means Render is actually running the Vite *dev* server (`npm run dev` / `start:dev`) instead of the built production server. If your Render Web Service was created before this Start Command was set, Render keeps whatever Start Command you configured manually and does not retroactively read `render.yaml`. Fix: in the Render dashboard, open the service → **Settings** → **Start Command**, set it to `npm start` (or `node .output/server/index.mjs`), save, then **Manual Deploy → Clear build cache & deploy**.
+
+---
+
+## Application map
+
+### Command
+| Route | Page | Purpose |
+|---|---|---|
+| `/` | Dashboard | SOC KPIs, kill-chain, evidence, interactive charts |
+| `/overview` | Overview | Five-entity collaboration picture |
+| `/guided` | Guided demo | Jury walkthrough |
+
+### Analytics & ML
+| Route | Page | Purpose |
+|---|---|---|
+| `/prevalence` | Population prevalence | Protected aggregates, no raw rows |
+| `/federated` | Federated + DP-SGD | Round controls, stats, clickable architecture |
+| `/ml` | ML laboratory | Task, model families, DP-SGD recipe |
+| `/pipeline` | Secure pipeline | Data → local train → SecAgg → global model |
+| `/tradeoff` | Privacy / utility | \(\varepsilon\) sweep, attack confidence vs utility |
+
+### Access
+| Route | Page | Purpose |
+|---|---|---|
+| `/console` | Analyst console | Chat queries; individual-level asks are blocked |
+| `/decisions` | Access decisions | ALLOWED / BLOCKED log |
+| `/monitor` | Live monitor | Streaming FL / SecAgg / kill-chain events |
+| `/ledger` | Privacy ledger | \(\varepsilon\) spend per entity |
+
+### Security
+| Route | Page | Purpose |
+|---|---|---|
+| `/attacklab` | Attack lab | Run MI / GI / poisoning / differencing (naïve vs protected) |
+| `/threat` | Posture / kill-chain | AEGIS-style posture + SENTINEL stages |
+| `/differencing` | Differencing | Composition / overlapping-query risk |
+| `/policy` | Policy | What the analyst is allowed to ask |
+
+### Ops
+| Route | Page | Purpose |
+|---|---|---|
+| `/infrastructure` | Entities | Connect / disconnect silos, remaining budget |
+| `/health` | System health | Aggregator, DP engine, policy, audit vitality |
+| `/audit` | Audit | Operator trail of queries, attacks, rounds |
+
+---
+
+## Architecture (short)
+
+```
+Entity A..E  ── local records stay here ──► DP-SGD (clip + noise)
+        │                                         │
+        │     only updates / DP answers           ▼
+        └──────────────►  Secure aggregator  ──► global model
+                              │
+                     query monitor + kill-chain
+                     policy gate + ε accountant
+                              │
+                         analyst console
+```
+
+**Hard rule:** raw personal records are never uploaded. The dashboard, console, and attack lab operate on aggregates, model updates, and synthetic telemetry.
+
+State lives in a Zustand store (`src/lib/store.ts`) with a privacy engine (`src/lib/engine.ts`) that classifies queries, answers aggregates, and scores attacks against the measured experiment (`src/lib/results.ts` / `public/results.json`).
+
+---
+
+## Tech stack
+
+- React 19 + TypeScript
+- TanStack Start / Router / Query
+- Vite 8, Tailwind CSS v4
+- Zustand, Recharts, Zod, Lucide
+- Optional: Python research engine under `research/` (federated DP-SGD, attacks, tests)
+
+---
+
+## Project layout
+
+```
+.
+├── README.md                 ← this file
+├── package.json
+├── vite.config.ts            ← dev server: 0.0.0.0:8080
+├── tsconfig.json
+├── startup.sh                ← idempotent preview start
+├── public/
+│   ├── results.json          ← executed experiment output
+│   ├── favicon.svg
+│   └── og.jpg
+├── src/
+│   ├── components/           ← shell, sidebar, charts, primitives
+│   ├── lib/
+│   │   ├── engine.ts         ← query policy + attack scoring
+│   │   ├── results.ts        ← measured metrics
+│   │   └── store.ts          ← app state (entities, live feed, chat)
+│   ├── routes/               ← one file per page
+│   ├── styles.css
+│   └── router.tsx
+└── research/                 ← optional Python experiment engine
+    ├── src/                  ← FL, DP-SGD, attacks, kill-chain
+    ├── experiments/
+    ├── tests/
+    └── requirements.txt
+```
+
+---
+
+## Re-running the research engine (optional)
+
+The UI already ships with measured numbers. To regenerate them:
+
+```bash
+cd research
 python3 -m venv .venv
-source .venv/bin/activate
+source .venv/bin/activate          # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
-python server.py
+python experiments/run_experiment.py
 ```
 
-Open `http://127.0.0.1:8000/`.
+Copy the resulting `results.json` into `public/results.json` (and, if you change constants, `src/lib/results.ts`).
 
-## Research-engine tests
+---
 
-```bash
-cd engine
-python3 -m tests.run_all
-```
+## Demo script (about 8 minutes)
 
-The bundled suite contains **59 tests** covering the accountant, DP-SGD, federated training, secure aggregation, robust aggregation, firewall/query monitoring, attacks, data generation, and agent behavior.
+1. **Dashboard** — KPIs, kill-chain, naïve vs DP charts. Toggle light/dark.
+2. **ML laboratory** — task definition and model-family comparison.
+3. **Attack lab** — run *Gradient inversion* naïve vs protected; then membership inference.
+4. **Federated + DP-SGD** — click architecture stages; run a training round.
+5. **Analyst console** — ask a prevalence question (allowed); ask for a named patient (blocked).
+6. **Live monitor + health + audit** — confirm the trail is populated, not empty.
+7. **Trade-off** — \(\varepsilon\) vs utility vs attack confidence.
 
-## Jury demo instructions
+---
 
-1. **Dashboard** — point out the four connected custodians, raw records shared = 0, and measured benchmark card.
-2. **Population Prevalence** — change region, establishment, and condition; show the protected answer and population diagram.
-3. **Federated Classifier** — run a training round and show packets moving to the secure aggregator while raw records remain at 0 transferred.
-4. **Analyst Console** — run a generalized/safe request and show the actual protected answer. Then run a blocked individual request and show that no answer is released.
-5. **Attack Lab** — change target size, observations, signal, and epsilon. Run naive and protected attacks and show confidence moving.
-6. **Differencing Detector** — build a narrowing query sequence and analyze it; change the sequence to demonstrate different risk outcomes.
-7. **Threat Detection** — show the live security stream reacting to attack/query activity.
-8. **Privacy Protection vs Answer Accuracy** — move epsilon and demonstrate the utility/privacy trade-off plus the dotted population visualization.
-9. **Infrastructure** — demonstrate that an establishment can be added/connected and that its Excel dataset can be attached.
-10. **Audit Trail** — export the session evidence if required.
+## Honest limitations
+
+- Synthetic data only. No real personal records are processed.
+- Membership-inference advantage is modest even in the naïve setting because the classification signal is weak; that is reported, not hidden.
+- The in-browser attack lab *replays and interpolates* the executed experiment. It is not training 32k-row models in the browser.
+- Secure aggregation is a protocol simulation (mask exchange / drop handling), not a production MPC deployment.
+- Auth is off. This is a demonstration control plane, not a multi-tenant production service.
+
+---
+
+## License / use
+
+Competition prototype for privacy-preserving analytics on sensitive government data. Synthetic data and measured results only. Not for production processing of real personal information.

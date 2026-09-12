@@ -1,0 +1,20 @@
+services:
+  - type: web
+    name: sentinel-ppa-gov
+    runtime: node
+    plan: free
+    branch: main
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    envVars:
+      - key: NODE_VERSION
+        value: 22
+      - key: NODE_ENV
+        value: production
+      # Optional: set this to a Postgres connection string (e.g. a Render
+      # Postgres instance or Neon) to persist data across restarts. If left
+      # unset, the app falls back to an in-memory embedded database (PGLite)
+      # that resets on every deploy/restart.
+      # - key: DATABASE_URL
+      #   sync: false
+    healthCheckPath: /

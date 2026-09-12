@@ -1,0 +1,112 @@
+/** Measured SENTINEL experiment numbers — from executed run, not fabricated. */
+export const MEASURED = {
+  naiveAuc: 0.5965,
+  flNoDpAuc: 0.5919,
+  flDp4Auc: 0.5944,
+  proposedAuc: 0.5944,
+  records: 32000,
+  entities: 5,
+  positiveRate: 0.0406,
+  miNaive: 0.5098,
+  miFl: 0.4864,
+  miDp: 0.4913,
+  miProposed: 0.4935,
+  giRaw: 0.999999999933,
+  giDp: 0.000325196,
+  giRawMse: 5.56e-34,
+  giDpMse: 3.1768,
+  collectiveLocal: 0.7118,
+  collectiveFed: 0.7385,
+  killChainQueries: 17,
+  killChainAlerts: 15,
+  maxStage: "EXTRACTION_ATTEMPT",
+  models: [
+    { name: "Logistic Regression", roc: 0.597, pr: 0.066, f1: 0.0 },
+    { name: "Random Forest", roc: 0.57, pr: 0.059, f1: 0.05 },
+    { name: "Hist. Gradient Boosting", roc: 0.58, pr: 0.056, f1: 0.0 },
+    { name: "MLP", roc: 0.492, pr: 0.042, f1: 0.0 },
+    { name: "Isolation Forest", roc: 0.569, pr: 0.055, f1: 0.075 },
+  ],
+  sweep: [
+    { label: "No DP", eps: null as number | null, auc: 0.5919, sigma: 0 },
+    { label: "ε 0.5", eps: 0.5, auc: 0.5899, sigma: 37.57 },
+    { label: "ε 1", eps: 1, auc: 0.5934, sigma: 18.98 },
+    { label: "ε 2", eps: 2, auc: 0.5942, sigma: 9.71 },
+    { label: "ε 4", eps: 4, auc: 0.5944, sigma: 5.02 },
+    { label: "ε 8", eps: 8, auc: 0.5944, sigma: 2.68 },
+    { label: "ε 16", eps: 16, auc: 0.5944, sigma: 1.48 },
+    { label: "ε 32", eps: 32, auc: 0.5944, sigma: 0.86 },
+  ],
+  poisoning: [
+    { attack: "Clean", mean: 0.592, median: 0.595, trim: 0.593, clip: 0.592 },
+    { attack: "Label flip", mean: 0.586, median: 0.584, trim: 0.589, clip: 0.586 },
+    { attack: "10× scale", mean: 0.585, median: 0.594, trim: 0.593, clip: 0.586 },
+    { attack: "2/5 collude", mean: 0.591, median: 0.591, trim: 0.595, clip: 0.591 },
+  ],
+  miByN: [
+    { n: 24000, test: 0.597, mi: 0.498 },
+    { n: 3000, test: 0.575, mi: 0.503 },
+    { n: 500, test: 0.485, mi: 0.522 },
+    { n: 150, test: 0.47, mi: 0.516 },
+  ],
+  entityReputation: [
+    { id: "A", name: "Dept. A · HR / identity", score: 0, tier: "normal" as const },
+    { id: "B", name: "Dept. B · Licensing", score: 0, tier: "normal" as const },
+    { id: "C", name: "Dept. C · Critical infra", score: 11.5, tier: "suspected_attack" as const },
+    { id: "D", name: "Dept. D · Health services", score: 3, tier: "elevated" as const },
+    { id: "E", name: "Dept. E · Digital services", score: 0, tier: "normal" as const },
+  ],
+};
+
+export const DEFAULT_ENTITIES = [
+  { id: "A", name: "Entity A · HR / identity", records: 6800, connected: true, epochs: 15, budget: 8 },
+  { id: "B", name: "Entity B · Licensing", records: 6400, connected: true, epochs: 15, budget: 8 },
+  { id: "C", name: "Entity C · Critical infra", records: 7200, connected: true, epochs: 15, budget: 5.9 },
+  { id: "D", name: "Entity D · Health services", records: 6100, connected: true, epochs: 15, budget: 6.1 },
+  { id: "E", name: "Entity E · Digital services", records: 5500, connected: true, epochs: 15, budget: 7.0 },
+];
+
+export const ARCH_STAGES = [
+  {
+    id: "local",
+    title: "Entity-local records",
+    tag: "PRIVATE",
+    desc: "Synthetic personal records stay inside each government silo. No pooling, no central warehouse.",
+  },
+  {
+    id: "train",
+    title: "Local training (DP-SGD)",
+    tag: "LOCAL",
+    desc: "Each entity trains a logistic classifier on-site. Per-example gradients are clipped (C=1.5).",
+  },
+  {
+    id: "noise",
+    title: "Gaussian noise",
+    tag: "DP",
+    desc: "Calibrated Gaussian noise is added to clipped gradients. RDP accountant converts to (ε, δ)-DP. δ = 1e-5.",
+  },
+  {
+    id: "mask",
+    title: "Secure aggregation",
+    tag: "SECAGG",
+    desc: "Pairwise additive masks so the aggregator never observes an individual update.",
+  },
+  {
+    id: "robust",
+    title: "Robust aggregation",
+    tag: "DEFENSE",
+    desc: "Coordinate-median / trimmed-mean neutralize scaled poisoning. Trade-off: median needs per-client updates, incompatible with SecAgg.",
+  },
+  {
+    id: "global",
+    title: "Global model",
+    tag: "SHARED",
+    desc: "Only the aggregated update becomes the new global model. Raw rows never leave the entity.",
+  },
+  {
+    id: "kill",
+    title: "Kill-chain monitor",
+    tag: "SOC",
+    desc: "Query patterns, budget draw-down and update-norm anomalies map to reconnaissance → extraction stages.",
+  },
+];
