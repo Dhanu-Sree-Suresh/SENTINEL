@@ -23,8 +23,8 @@ All headline numbers are from an executed experiment (`public/results.json`), no
 - **Multi-entity collaboration** — five synthetic government silos, ~32,000 records, ~4% positive rate, non-IID
 - **Federated learning + DP-SGD** — local training, clip \(C=1.5\), Gaussian noise, Rényi-DP accountant, secure aggregation
 - **Concrete ML task** — binary insider-threat risk classification (logistic regression backbone + model-family comparison)
-- **Naïve vs protected** — pooled training vs FL+DP at \(\varepsilon \approx 4\)
-- **Privacy / utility trade-off** — \(\varepsilon\) sweep from 0.5 to 32
+- **Naïve vs protected** — pooled training vs FL+DP at $\varepsilon \approx 4$
+- **Privacy / utility trade-off** — $\varepsilon$ sweep from 0.5 to 32
 - **Controlled attacks** — membership inference, gradient inversion, differencing, rare-subgroup reconstruction, repeated queries, poisoning
 - **SOC operations** — live monitor, kill-chain stages, health, audit, analyst chat console
 - **Dual theme** — dark PPA-GOV control plane and light Sentinel SOC
@@ -56,7 +56,7 @@ All headline numbers are from an executed experiment (`public/results.json`), no
 npm install
 ```
 
-### Start (development)
+### Start
 
 ```bash
 npm run dev
@@ -146,7 +146,7 @@ Notes:
 | `/federated` | Federated + DP-SGD | Round controls, stats, clickable architecture |
 | `/ml` | ML laboratory | Task, model families, DP-SGD recipe |
 | `/pipeline` | Secure pipeline | Data → local train → SecAgg → global model |
-| `/tradeoff` | Privacy / utility | \(\varepsilon\) sweep, attack confidence vs utility |
+| `/tradeoff` | Privacy / utility | $\varepsilon$ sweep, attack confidence vs utility |
 
 ### Access
 | Route | Page | Purpose |
@@ -154,7 +154,7 @@ Notes:
 | `/console` | Analyst console | Chat queries; individual-level asks are blocked |
 | `/decisions` | Access decisions | ALLOWED / BLOCKED log |
 | `/monitor` | Live monitor | Streaming FL / SecAgg / kill-chain events |
-| `/ledger` | Privacy ledger | \(\varepsilon\) spend per entity |
+| `/ledger` | Privacy ledger | $\varepsilon$ spend per entity |
 
 ### Security
 | Route | Page | Purpose |
@@ -173,7 +173,7 @@ Notes:
 
 ---
 
-## Architecture (short)
+## Architecture
 
 ```
 Entity A..E  ── local records stay here ──► DP-SGD (clip + noise)
@@ -234,7 +234,7 @@ State lives in a Zustand store (`src/lib/store.ts`) with a privacy engine (`src/
 
 ---
 
-## Re-running the research engine (optional)
+## Re-running the research engine
 
 The UI already ships with measured numbers. To regenerate them:
 
@@ -250,7 +250,7 @@ Copy the resulting `results.json` into `public/results.json` (and, if you change
 
 ---
 
-## Demo script (about 8 minutes)
+## Features
 
 1. **Dashboard** — KPIs, kill-chain, naïve vs DP charts. Toggle light/dark.
 2. **ML laboratory** — task definition and model-family comparison.
@@ -258,7 +258,7 @@ Copy the resulting `results.json` into `public/results.json` (and, if you change
 4. **Federated + DP-SGD** — click architecture stages; run a training round.
 5. **Analyst console** — ask a prevalence question (allowed); ask for a named patient (blocked).
 6. **Live monitor + health + audit** — confirm the trail is populated, not empty.
-7. **Trade-off** — \(\varepsilon\) vs utility vs attack confidence.
+7. **Trade-off** — $\varepsilon$ vs utility vs attack confidence.
 
 ---
 
@@ -266,7 +266,6 @@ Copy the resulting `results.json` into `public/results.json` (and, if you change
 
 - Synthetic data only. No real personal records are processed.
 - Membership-inference advantage is modest even in the naïve setting because the classification signal is weak; that is reported, not hidden.
-- The in-browser attack lab *replays and interpolates* the executed experiment. It is not training 32k-row models in the browser.
 - Secure aggregation is a protocol simulation (mask exchange / drop handling), not a production MPC deployment.
 - Auth is off. This is a demonstration control plane, not a multi-tenant production service.
 
