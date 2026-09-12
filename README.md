@@ -35,9 +35,9 @@ All headline numbers are from an executed experiment (`public/results.json`), no
 |---|---|---|
 | Naïve pooled (logistic) | **0.597** | Utility ceiling; gradients fully exposed |
 | Federated, no DP | 0.592 | No raw rows moved |
-| Federated + DP-SGD \(\varepsilon \approx 4\) | **0.594** | Utility essentially held |
-| Gradient inversion (raw) | cosine \(\approx 1.0\) | Reconstructs the batch |
-| Gradient inversion (DP) | cosine \(\approx 0.0003\) | Collapses |
+| Federated + DP-SGD $\varepsilon \approx 4$ | **0.594** | Utility essentially held |
+| Gradient inversion (raw) | cosine $\approx 1.0$ | Reconstructs the batch |
+| Gradient inversion (DP) | cosine $\approx 0.0003$ | Collapses |
 | Membership inference (naïve) | AUC 0.510 | Weak-signal task; reported honestly |
 | Membership inference (FL+DP) | AUC 0.491 | Near chance |
 
