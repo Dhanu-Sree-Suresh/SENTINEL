@@ -4,16 +4,6 @@ Privacy-preserving analytics control plane for sensitive government data.
 
 SENTINEL lets multiple agencies obtain useful population analytics and a shared insider-threat model **without pooling raw records**. Each silo keeps its data local. Only clipped, noised, optionally masked updates and differentially private aggregates leave the entity.
 
-This repository is the unified competition prototype. It merges:
-
-| Source | What was kept |
-|---|---|
-| **ppa-gov-final-competition-ready** | Multi-page control-plane IA, analyst console, guided demo, policy/ledger |
-| **ppa-gov-ctf2026-final-v4** | Dark command-center look (pink / cyan), page set, interactive charts |
-| **sentinel-kill-chain** | Light SOC theme, kill-chain telemetry, measured FL / DP-SGD / attack numbers |
-| **AEGIS prototype** | Live monitor, security posture, attack-lab pipeline, architecture diagram |
-| **PPGA** | Guided workflow, prevalence / trade-off views |
-
 All headline numbers are from an executed experiment (`public/results.json`), not placeholders.
 
 ---
